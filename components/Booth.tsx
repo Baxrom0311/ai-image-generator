@@ -40,6 +40,8 @@ export default function Booth() {
   const [error, setError] = useState('')
   const [cameraOpen, setCameraOpen] = useState(false)
   const [showKeyboard, setShowKeyboard] = useState(false)
+  const [flash, setFlash] = useState(false)
+  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -92,6 +94,7 @@ export default function Booth() {
     setAiText('')
     setImage(null)
     setImageUrl(null)
+    setCapturedPhoto(null)
     setUserText('')
     historyRef.current = []
     photoRef.current = null
@@ -328,6 +331,10 @@ export default function Booth() {
 
     const photo = canvas.toDataURL('image/jpeg', 0.9)
     photoRef.current = photo
+    setCapturedPhoto(photo)
+    // Flash effect
+    setFlash(true)
+    setTimeout(() => setFlash(false), 400)
     closeCamera()
 
     setPhase('processing')
@@ -457,8 +464,22 @@ export default function Booth() {
             <div className="absolute bottom-3 left-3 w-8 h-8 border-b-2 border-l-2 border-accent/50 rounded-bl-lg" />
             <div className="absolute bottom-3 right-3 w-8 h-8 border-b-2 border-r-2 border-accent/50 rounded-br-lg" />
             {phase === 'countdown' && count > 0 && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm">
-                <span className="text-[12rem] font-bold text-white drop-shadow-2xl animate-bounce">{count}</span>
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[2px]">
+                {/* Circular ring */}
+                <svg className="absolute w-48 h-48 md:w-56 md:h-56 -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="3" />
+                  <circle cx="50" cy="50" r="45" fill="none" stroke="url(#ring-grad)" strokeWidth="4" strokeLinecap="round" className="countdown-ring" key={count} />
+                  <defs>
+                    <linearGradient id="ring-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#00e5ff" />
+                      <stop offset="100%" stopColor="#ff6b35" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                {/* Number */}
+                <span key={count} className="countdown-num text-[10rem] md:text-[14rem] font-black text-white drop-shadow-[0_0_40px_rgba(0,229,255,0.5)]" style={{ textShadow: '0 0 60px rgba(0,229,255,0.4), 0 0 120px rgba(255,107,53,0.2)' }}>
+                  {count}
+                </span>
               </div>
             )}
           </div>
@@ -482,21 +503,38 @@ export default function Booth() {
           {/* Generating */}
           {phase === 'generating' && (
             <div className="flex flex-col items-center gap-6 animate-fade-in">
-              <div className="relative w-28 h-28">
-                <div className="absolute inset-0 rounded-full border-[3px] border-melon/15" />
-                <div className="absolute inset-0 rounded-full border-[3px] border-melon border-t-transparent animate-spin" />
-                <div className="absolute inset-3 rounded-full border-[3px] border-accent/15" />
-                <div className="absolute inset-3 rounded-full border-[3px] border-accent border-b-transparent animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
-                {/* Center icon */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
-                  </svg>
+              {capturedPhoto ? (
+                <div className="relative ai-morph overflow-hidden" style={{ maxHeight: '55vh', maxWidth: '90vw' }}>
+                  {/* Original photo with hue effect */}
+                  <img src={capturedPhoto} alt="" className="ai-hue rounded-2xl max-h-[55vh] object-contain" />
+                  {/* Glitch overlay */}
+                  <img src={capturedPhoto} alt="" className="absolute inset-0 w-full h-full object-contain ai-glitch opacity-40 mix-blend-screen rounded-2xl" />
+                  {/* Scan line */}
+                  <div className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent ai-scan-line opacity-80" />
+                  {/* Glow border */}
+                  <div className="absolute inset-0 rounded-2xl border-2 border-accent/30 animate-pulse" />
+                  {/* Sparkle particles */}
+                  <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                    {[...Array(6)].map((_, i) => (
+                      <div key={i} className="absolute w-1 h-1 bg-accent rounded-full animate-float opacity-60" style={{ left: `${15 + i * 14}%`, top: `${20 + (i % 3) * 25}%`, animationDelay: `${i * 0.4}s` }} />
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="relative w-28 h-28">
+                  <div className="absolute inset-0 rounded-full border-[3px] border-melon/15" />
+                  <div className="absolute inset-0 rounded-full border-[3px] border-melon border-t-transparent animate-spin" />
+                  <div className="absolute inset-3 rounded-full border-[3px] border-accent/15" />
+                  <div className="absolute inset-3 rounded-full border-[3px] border-accent border-b-transparent animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+                </div>
+              )}
               <div className="text-center">
-                <p className="text-lg text-white/50 font-light">Rasm yaratilmoqda...</p>
-                <p className="text-xs text-white/20 mt-1">AI sizning rasmingizni o'zgartirmoqda</p>
+                <p className="text-lg text-white/50 font-light">AI rasm yaratmoqda...</p>
+                <div className="flex items-center justify-center gap-1.5 mt-2">
+                  {[0, 1, 2, 3, 4].map(i => (
+                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-accent/60 animate-bounce" style={{ animationDelay: `${i * 0.12}s` }} />
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -657,6 +695,9 @@ export default function Booth() {
       </div>
 
       <canvas ref={canvasRef} className="hidden" />
+
+      {/* Flash effect on capture */}
+      {flash && <div className="fixed inset-0 bg-white flash-overlay z-50 pointer-events-none" />}
 
       <span className="fixed bottom-3 right-4 text-sm text-white/20 tracking-wider z-20">by Bakhromdev</span>
     </main>
