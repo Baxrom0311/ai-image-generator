@@ -48,19 +48,13 @@ const RESPONSE_SCHEMA = {
 }
 
 export async function POST(req: Request) {
-  console.log('\n========== /api/chat ==========')
   try {
     const { history } = await req.json()
-    console.log('[chat] History length:', history?.length)
-    console.log('[chat] Last message:', history?.[history.length - 1]?.text?.substring(0, 100))
 
     const contents = history.map((m: { role: string; text: string }) => ({
       role: m.role,
       parts: [{ text: m.text }],
     }))
-
-    console.log('[chat] Calling Gemini model:', MODEL)
-    const startTime = Date.now()
 
     const response = await ai.models.generateContent({
       model: MODEL,
@@ -72,26 +66,11 @@ export async function POST(req: Request) {
       },
     })
 
-    const elapsed = Date.now() - startTime
-    console.log('[chat] Gemini responded in', elapsed, 'ms')
-
-    const rawText = response.text ?? '{}'
-    console.log('[chat] Raw response:', rawText.substring(0, 300))
-
-    const parsed = JSON.parse(rawText)
-    console.log('[chat] Parsed - message:', parsed.message?.substring(0, 80))
-    console.log('[chat] Parsed - action:', parsed.action)
-    console.log('[chat] Parsed - enhancedPrompt:', parsed.enhancedPrompt?.substring(0, 100) || '(empty)')
-
+    const parsed = JSON.parse(response.text ?? '{}')
     return Response.json(parsed)
-  } catch (e: unknown) {
-    console.error('[chat] CATCH ERROR:', e)
-    if (e instanceof Error) {
-      console.error('[chat] Error message:', e.message)
-      console.error('[chat] Error stack:', e.stack)
-    }
+  } catch {
     return Response.json(
-      { message: "Kechirasiz, xatolik yuz berdi. Qaytadan urinib ko'ring.", action: 'none', enhancedPrompt: '' },
+      { message: "Kechirasiz, xatolik yuz berdi.", action: 'none', enhancedPrompt: '' },
       { status: 500 }
     )
   }

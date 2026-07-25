@@ -20,3 +20,43 @@ body {
 ::-webkit-scrollbar {
   display: none;
 }
+
+/* Kiosk background */
+.kiosk-bg {
+  background: radial-gradient(ellipse at 50% 0%, rgba(255,107,53,0.08) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 100%, rgba(0,229,255,0.06) 0%, transparent 50%),
+              #0a0a0a;
+}
+
+/* Glassmorphism card */
+.glass {
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Shimmer gradient for loading states */
+.shimmer-bg {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+  background-size: 200% 100%;
+}
+
+/* Mic button glow */
+.mic-glow {
+  box-shadow: 0 0 40px rgba(0,229,255,0.2), 0 0 80px rgba(0,229,255,0.1);
+}
+
+.mic-glow-recording {
+  box-shadow: 0 0 40px rgba(239,68,68,0.3), 0 0 80px rgba(239,68,68,0.15);
+}
+
+/* Camera frame */
+.camera-frame {
+  box-shadow: 0 0 0 2px rgba(0,229,255,0.15), 0 20px 60px rgba(0,0,0,0.5);
+}
+
+/* Result image glow */
+.result-glow {
+  box-shadow: 0 0 60px rgba(255,107,53,0.2), 0 20px 60px rgba(0,0,0,0.5);
+}

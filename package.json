@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "@google/genai": "^2.13.0",
+    "@types/better-sqlite3": "^7.6.13",
+    "better-sqlite3": "^13.0.1",
     "next": "^15.1.0",
     "qrcode.react": "^4.1.0",
     "react": "^19.0.0",
